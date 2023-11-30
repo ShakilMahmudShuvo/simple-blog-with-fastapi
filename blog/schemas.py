@@ -6,10 +6,7 @@ class Blog(BaseModel):
     body: str
 
 
-class ShowBlog(BaseModel):
-    title: str
-    class Config():
-        orm_mode = True
+
 
 class User(BaseModel):
     name: str
@@ -19,5 +16,13 @@ class User(BaseModel):
 class ShowUser(BaseModel):
     name: str
     email: str
+    class Config():
+        orm_mode = True
+
+
+class ShowBlog(BaseModel):
+    title: str
+    body: str
+    creator: ShowUser
     class Config():
         orm_mode = True

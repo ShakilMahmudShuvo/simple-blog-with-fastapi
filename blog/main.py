@@ -19,7 +19,7 @@ def get_db():
 
 @app.post('/blog', status_code=status.HTTP_201_CREATED, tags=['Blog'])
 def create(request: schemas.Blog, db: Session = Depends(get_db)):
-    new_blog = models.Blog(title=request.title, body=request.body)
+    new_blog = models.Blog(title=request.title, body=request.body, user_id= 1)
     db.add(new_blog)
     db.commit()
     db.refresh(new_blog)
@@ -53,16 +53,19 @@ def all(db: Session = Depends(get_db)):
 
 
 @app.get('/blog/{id}', status_code=status.HTTP_200_OK, response_model=schemas.ShowBlog)
-def show(id: int, response: Response, db: Session = Depends(get_db)):
+def show(id: int, response_model=schemas.ShowBlog, db: Session = Depends(get_db)):
+    print("--------------")
     blog = db.query(models.Blog).filter(models.Blog.id == id).first()
+    creator = blog.creator
     if not blog:
+        print("=========")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Blog with this id {id} not found!")
         # response.status_code = status.HTTP_404_NOT_FOUND
         # return {'detial': f"Blog with this id {id} not found!"}
-    return blog
+    return blog.__dict__
 
 
-@app.post('/user', response_model=schemas.ShowUser)
+@app.post('/user', response_model=schemas.ShowUser, tags=["User"])
 def create_user(request: schemas.User, db: Session = Depends(get_db)):
     hashed_password = Hasher.bcrypt_hash(request.password)
     new_user = models.User(name=request.name, email=request.email, password=hashed_password)
@@ -72,7 +75,7 @@ def create_user(request: schemas.User, db: Session = Depends(get_db)):
     return new_user
 
 
-@app.get('/user/{id}', response_model=schemas.ShowUser)
+@app.get('/user/{id}', response_model=schemas.ShowUser, tags=["User"])
 def get_user(id: int, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == id).first()
     if not user:
